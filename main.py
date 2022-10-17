@@ -15,8 +15,8 @@ game_area = numbers.copy()
 
 
 def input_command(help_text, data_type=None, data_max=None):
-    result = None
-    while not result:
+    result = -1
+    while result == -1:
         string = input(help_text)
         if string.upper() == 'СТОП':
             quit()
@@ -27,10 +27,14 @@ def input_command(help_text, data_type=None, data_max=None):
                 result_list = list(string.split())
                 if (len(result_list) == 2 and result_list[0].isdigit() and result_list[1].isdigit()
                         and 2 >= int(result_list[0]) >= 0 and 2 >= int(result_list[1]) >= 0):
-                    result = list(map(int, result_list))
+                    coordinate = list(map(int, result_list))
+                    result = coordinate[0] * 3 + coordinate[1]
+                    if not game_area[result] in get_empty_field(game_area):
+                        print('\nЭта клетка уже занята !')
+                        result = -1
         else:
             result = string
-        if not result:
+        if result == -1:
             print('Ваш выбор непонятен, попробуйте еще раз.')
     return result
 
@@ -39,11 +43,6 @@ def print_game_area():
     print('\n  0 1 2')
     for y in range(3):
         print(y, ' '.join(list(map(lambda symbol: '-' if symbol in numbers else symbol, game_area[y * 3:y * 3 + 3]))))
-
-
-# Перевод введенных координат а индекс списка (нужно было запихнуть в input_command, но поздно)
-def ind_by_coordinate(coordinate):
-    return coordinate[0] * 3 + coordinate[1]
 
 
 # Все возможные вариаеты победы для текущей ситуации
@@ -178,11 +177,7 @@ while True:
     while True:
 
         # Ход первого игрока - это всегда человек
-        index = ind_by_coordinate(input_command(f'\n{player_one_name}, ваш ход: ', 'coordinate'))
-        empty_field = get_empty_field(game_area)
-        if not game_area[index] in empty_field:
-            print('\nЭта клетка уже занята !')
-            continue
+        index = input_command(f'\n{player_one_name}, ваш ход: ', 'coordinate')
         game_area[index] = player_one_symbol
         last_human_step = index # Это нужно запомнить дла стратегии компрьютера
         # Печатаем игровое поле и проверяем завершение игры первым игроком
@@ -197,10 +192,7 @@ while True:
         # Ход второго игрока зависит от режима игры - или это компрьютер или человек
         if game_mode == MODE_TWO_PLAEYER:
             # Если второй игрок человек
-            index = ind_by_coordinate(input_command(f'\n{player_second_name}, ваш ход: ', 'coordinate'))
-            if not game_area[index] in empty_field:
-                print('\nЭта клетка уже занята !')
-                continue
+            index = input_command(f'\n{player_second_name}, ваш ход: ', 'coordinate')
             game_area[index] = player_second_symbol
         else:
 
